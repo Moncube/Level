@@ -1,9 +1,14 @@
 package world.bentobox.level.commands;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import world.bentobox.bentobox.api.commands.CompositeCommand;
@@ -29,7 +34,15 @@ public class IslandValueCommand extends CompositeCommand {
     public boolean execute(User user, String label, List<String> args) {
         Player player = user.getPlayer();
         PlayerInventory inventory = player.getInventory();
-        if (!inventory.getItemInMainHand().getType().equals(Material.AIR)) {
+        if (args.get(1).equals("all")) {
+            int total = Arrays.asList(inventory.getContents()).stream()
+                    .filter(itemStack ->  itemStack.getType() != Material.AIR)
+                    .filter(itemStack -> addon.getBlockConfig().getValue(getWorld(), itemStack.getType()) != null)
+                    .map(itemStack -> addon.getBlockConfig().getValue(getWorld(), itemStack.getType()) * itemStack.getAmount())
+                    .reduce(0, Integer::sum);
+            user.sendMessage("island.value.success", "[value]", String.valueOf(total));
+        }
+        else if (!inventory.getItemInMainHand().getType().equals(Material.AIR)) {
             Material material = inventory.getItemInMainHand().getType();
             Integer value = addon.getBlockConfig().getValue(getWorld(), material);
             if (value != null) {
