@@ -35,7 +35,7 @@ import com.google.common.collect.Multisets;
 
 import us.lynuxcraft.deadsilenceiv.advancedchests.AdvancedChestsAPI;
 import us.lynuxcraft.deadsilenceiv.advancedchests.chest.AdvancedChest;
-import us.lynuxcraft.deadsilenceiv.advancedchests.chest.ChestPage;
+import us.lynuxcraft.deadsilenceiv.advancedchests.chest.gui.page.ChestPage;
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.util.Pair;
@@ -401,11 +401,6 @@ public class IslandLevelCalculator {
                 }
             }
         }
-        // Chunk finished
-        if (chunk.getWorld().getEnvironment().equals(Environment.NORMAL) && chunksToCheck.isEmpty()) {
-            // This was the last chunk
-            tidyUp();
-        }
         // Complete the future - this must go back onto the primary thread to exit async otherwise subsequent actions will be async
         Bukkit.getScheduler().runTask(addon.getPlugin(),() -> {
             // Deal with any stacked blocks
@@ -435,7 +430,11 @@ public class IslandLevelCalculator {
                 if (addon.isAdvChestEnabled()) {
                     AdvancedChest aChest = AdvancedChestsAPI.getChestManager().getAdvancedChest(bs.getLocation());
                     if (aChest != null) {
-                        aChest.getPages().stream().map(ChestPage::getItems).forEach(c -> c.forEach(this::countItemStack));
+                        aChest.getPages().stream().map(ChestPage::getItems).forEach(c -> {
+                            for (ItemStack i : c) {
+                                countItemStack(i);
+                            }
+                        });
                         continue;
                     }
                 }
