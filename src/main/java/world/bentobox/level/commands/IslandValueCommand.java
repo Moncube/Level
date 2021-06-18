@@ -27,14 +27,15 @@ public class IslandValueCommand extends CompositeCommand {
 
     @Override
     public boolean execute(User user, String label, List<String> args) {
+    	System.out.println("args: "+ args);
         Player player = user.getPlayer();
         PlayerInventory inventory = player.getInventory();
-        if (args.get(1).equals("all")) {
+        if (!args.isEmpty() && args.get(0).equals("all")) {
             int total = Arrays.asList(inventory.getContents()).stream()
-                    .filter(itemStack -> itemStack.getType() != Material.AIR)
+                    .filter(itemStack -> itemStack != null && itemStack.getType() != Material.AIR)
                     .filter(itemStack -> addon.getBlockConfig().getValue(getWorld(), itemStack.getType()) != null)
-                    .map(itemStack -> addon.getBlockConfig().getValue(getWorld(), itemStack.getType()) * itemStack.getAmount())
-                    .reduce(0, Integer::sum);
+                    .mapToInt(itemStack -> addon.getBlockConfig().getValue(getWorld(), itemStack.getType()) * itemStack.getAmount())
+                    .sum();
             user.sendMessage("island.value.success", "[value]", String.valueOf(total));
         } else if (!inventory.getItemInMainHand().getType().equals(Material.AIR)) {
             Material material = inventory.getItemInMainHand().getType();
